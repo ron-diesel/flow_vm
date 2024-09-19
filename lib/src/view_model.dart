@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flow_vm/src/disposable.dart';
 import 'package:flow_vm/src/flow_notifier.dart';
 import 'package:flow_vm/src/intent.dart';
+import 'package:flow_vm/src/updater.dart';
 import 'package:flutter/foundation.dart';
 import 'package:stream_transform/stream_transform.dart';
 
@@ -17,8 +18,6 @@ abstract class ViewModel extends _FlowManager {
   final Map<Object, StreamSubscription<Intent>> _subscriptions = {};
   final List<Intent> _activeIntents = [];
 
-  final _updater = Updater();
-
   @protected
   void intent({
     required Object queueKey,
@@ -28,6 +27,7 @@ abstract class ViewModel extends _FlowManager {
     if (!_subscriptions.containsKey(queueKey)) {
       _subscribe(queueKey, transformer ?? _defaultTransformer);
     }
+
     _intentController.add(Intent(action: action, intentKey: queueKey));
   }
 
@@ -54,25 +54,48 @@ abstract class ViewModel extends _FlowManager {
     final stream = _intentController.stream
         .where((intent) => intent.intentKey == queueKey);
 
-    final transformedStream = transformer(stream, (intent) {
-      _activeIntents.add(intent);
-      return Stream.fromFuture(intent.execute(_updater));
-    });
+    final transformedStream = transformer(
+      stream,
+      (intent) {
+        _activeIntents.add(intent);
+        final updater = UpdaterImpl._();
 
-    final subscription = transformedStream.listen((intent) {
-      _activeIntents.remove(intent);
-    });
+        final controller = StreamController<Intent>.broadcast(
+          sync: true,
+          onCancel: updater.cancel,
+        );
+
+        Future<void> handleIntent() async {
+          try {
+            if (!controller.isClosed) await intent.execute(updater);
+          } catch (error, stackTrace) {
+            onError(error, stackTrace);
+            rethrow;
+          } finally {
+            _activeIntents.remove(intent);
+            if (!controller.isClosed) controller.close();
+          }
+        }
+
+        handleIntent();
+        return controller.stream;
+      },
+    );
+
+    final subscription = transformedStream.listen(null);
 
     _subscriptions[queueKey] = subscription;
   }
 
   @visibleForTesting
-  Future<void> get completeCurrentIntents =>
+  Future<void> awaitCurrentIntents() =>
       Future.wait(_activeIntents.map((intent) => intent.completerFuture));
+
+  void onError(Object error, StackTrace stackTrace) {}
 }
 
 abstract class SimpleViewModel extends ViewModel {
-  Updater get update => _updater;
+  Updater get update => UpdaterImpl._();
 }
 
 final class TestableViewModel extends SimpleViewModel {
@@ -84,9 +107,18 @@ final class TestableViewModel extends SimpleViewModel {
   Map<Object, StreamSubscription<Intent>> get subscriptions => _subscriptions;
 }
 
-class Updater {
-  MutableFlow<T> call<T>(DataFlow<T> flow) {
-    return flow as MutableFlow<T>;
+class UpdaterImpl implements Updater {
+  UpdaterImpl._();
+
+  bool _isCanceled = false;
+
+  @override
+  MutableFlow<T> call<T>(FlowVm<T> flow) {
+    return _isCanceled ? _DummyFlow() : _MutableFlow<T>(flow);
+  }
+
+  void cancel() {
+    _isCanceled = true;
   }
 }
 

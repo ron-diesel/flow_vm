@@ -1,4 +1,3 @@
-import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:flow_vm/flow_vm.dart';
 
 class SimpleCounterVM extends ViewModel {
@@ -6,11 +5,9 @@ class SimpleCounterVM extends ViewModel {
 
   void onIncrement() => intentNamed(
         action: _onIncrement,
-        transformer: restartable(),
       );
 
-  void _onIncrement(Updater emit) async {
-    await Future.delayed(Duration(seconds: 1));
+  void _onIncrement(Updater emit) {
     emit(counterFlow).change((it) => it + 1);
   }
 }

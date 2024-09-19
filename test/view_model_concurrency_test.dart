@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:bloc_concurrency/bloc_concurrency.dart';
-import 'package:flow_vm/src/view_model.dart';
+import 'package:flow_vm/flow_vm.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -13,46 +13,35 @@ class MockIntentAction extends Mock implements IntentAction {}
 
 class FakeUpdater extends Mock implements Updater {}
 
-FutureOr<void> _work1(int test) async {
-  print("start action1 test: $test");
-  await Future.delayed(const Duration(milliseconds: 100));
-  print("finish action1 test: $test");
-}
-
-FutureOr<void> _work2(int test) async {
-  print("start action2 test: $test");
-  await Future.delayed(const Duration(milliseconds: 100));
-  print("finish action2 test: $test");
-}
-
 void main() {
   group('IntentTransformer Tests', () {
     late TestableViewModel viewModel;
-    late MockIntentAction action1;
-    late MockIntentAction action2;
-    int counter = 0;
+    late DataFlow<int> flow1;
+    late DataFlow<int> flow2;
+    FutureOr<void> action1(Updater update) async {
+      await Future.delayed(const Duration(milliseconds: 100));
+      update(flow1).change((it) => ++it);
+    }
+
+    FutureOr<void> action2(Updater update) async {
+      await Future.delayed(const Duration(milliseconds: 100));
+      update(flow2).change((it) => ++it);
+    }
 
     setUpAll(() {
       registerFallbackValue(FakeUpdater());
-      viewModel = TestableViewModel();
-      action1 = MockIntentAction();
-      action2 = MockIntentAction();
     });
 
-    setUp((){
-      counter++;
+    setUp(() {
       print("-----------next test---------");
       viewModel = TestableViewModel();
-      reset(action1);
-      reset(action2);
-      when(() => action1.call(any())).thenAnswer((_) => _work1(counter));
-      when(() => action2.call(any())).thenAnswer((_) => _work2(counter));
+      flow1 = viewModel.newTestDataFlow(0);
+      flow2 = viewModel.newTestDataFlow(0);
     });
 
-    tearDown((){
+    tearDown(() {
       viewModel.dispose();
     });
-
 
     test('concurrent and droppable handling of different intents', () async {
       for (int i = 0; i < 10; i++) {
@@ -67,9 +56,10 @@ void main() {
         );
       }
 
-      await viewModel.completeCurrentIntents;
-      verify(() => action1.call(any())).called(1);
-      verify(() => action2.call(any())).called(10);
+      await Future.delayed(const Duration(milliseconds: 220));
+      await viewModel.awaitCurrentIntents();
+      expect(flow1.value, 1);
+      expect(flow2.value, 10);
     });
 
     test('sequential and restartable handling of different intents', () async {
@@ -85,10 +75,13 @@ void main() {
         );
       }
 
-      await Future.delayed(Duration.zero);
-      await viewModel.completeCurrentIntents;
-      verify(() => action1.call(any())).called(2);
-      verify(() => action2.call(any())).called(10);
+      for (int i = 0; i < 10; i++) {
+        await Future.delayed(const Duration(milliseconds: 101));
+        expect(flow1.value, i + 1);
+        if (i > 2) {
+          expect(flow2.value, 1);
+        }
+      }
     });
   });
 }

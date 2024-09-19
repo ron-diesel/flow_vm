@@ -38,7 +38,7 @@ void main() {
         action: mockAction,
       );
 
-      await viewModel.completeCurrentIntents;
+      await viewModel.awaitCurrentIntents();
       // Подтверждаем, что IntentAction был вызван
       verify(() => mockAction.call(any())).called(1);
     });
@@ -66,7 +66,7 @@ void main() {
     test('intentNamed should trigger action', () async {
       viewModel.intentNamed(action: mockAction);
 
-     await viewModel.completeCurrentIntents;
+     await viewModel.awaitCurrentIntents();
       verify(() => mockAction.call(any())).called(1);
     });
   });

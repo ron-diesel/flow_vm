@@ -2,10 +2,11 @@ import 'dart:math';
 
 import 'package:example/features/bloc_extended_example/bloc_counter_extended_screen.dart';
 import 'package:example/features/extended_counter/extended_counter_screen.dart';
+import 'package:flow_vm/flow_vm.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'benchmark_test.dart';
-import 'warming_up_widget.dart';
+import 'utils/benchmark.dart';
+import 'utils/warming_up_widget.dart';
 
 void main() {
   final random = Random();
@@ -34,6 +35,7 @@ void main() {
     }
 
     test('Print average times', () {
+      print("Benchmark extended test");
       for (final entry in times.entries) {
         final name = entry.key;
         final values = entry.value;
@@ -46,3 +48,4 @@ void main() {
     });
   });
 }
+

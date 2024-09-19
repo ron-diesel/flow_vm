@@ -5,17 +5,23 @@ class _FlowManager implements Disposable {
 
   @protected
   DataFlow<V> newDataFlow<V>(V value) {
-    final newFlow = _DataFlowMutable(value);
+    final newFlow = DataFlow(value);
     _disposables.add(newFlow);
     return newFlow;
   }
 
   @protected
   ActionFlow<V> newActionFlow<V>() {
-    final newFlow = _ActionFlowMutable<V>();
+    final newFlow = ActionFlow<V>();
     _disposables.add(newFlow);
     return newFlow;
   }
+
+  @visibleForTesting
+  DataFlow<V> newTestDataFlow<V>(V value) => newDataFlow(value);
+
+  @visibleForTesting
+  ActionFlow<V> newTestActionFlow<V>() => newActionFlow();
 
   @override
   @mustCallSuper
