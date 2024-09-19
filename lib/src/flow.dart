@@ -16,6 +16,9 @@ sealed class FlowVm<T> implements Disposable {
     _notifier.value = value;
   }
 
+  @visibleForTesting
+  testSet(T value) => _set(value);
+
   void _change(Change<T> change) {
     _set(change(value));
   }
