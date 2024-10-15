@@ -11,7 +11,6 @@ part 'flow.dart';
 
 part 'flow_manager.dart';
 
-@immutable
 abstract class ViewModel extends _FlowManager {
   final StreamController<Intent> _intentController =
       StreamController.broadcast();
