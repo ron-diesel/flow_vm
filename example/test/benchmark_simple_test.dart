@@ -1,3 +1,4 @@
+// ignore_for_file: avoid_print
 import 'dart:math';
 
 import 'package:example/features/bloc_example/bloc_counter_screen.dart';
@@ -28,7 +29,8 @@ void main() {
     };
 
     for (int i = 0; i < numRuns; i++) {
-      final uut = uutWidgets.entries.elementAt(random.nextInt(uutWidgets.length));
+      final uut =
+          uutWidgets.entries.elementAt(random.nextInt(uutWidgets.length));
       testWidgets(uut.key, (WidgetTester tester) async {
         final elapsed = await benchmarkTest(tester, uut.value(), uut.key);
         times[uut.key]!.add(elapsed);

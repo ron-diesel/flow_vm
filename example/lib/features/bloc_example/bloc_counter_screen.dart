@@ -9,38 +9,31 @@ class BlocCounterScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => CounterBloc(),
-      child: Builder(
-        builder: (context) {
-          return Scaffold(
-            body: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  const Text(
-                    'You have pushed the button this many times:',
-                  ),
-                  BlocBuilder<CounterBloc, int>(builder: (context, count) {
-                    return Text(
-                      '$count',
-                      style: Theme.of(context).textTheme.headlineMedium,
-                    );
-                  }),
-                ],
-              ),
+      child: Builder(builder: (context) {
+        return Scaffold(
+          body: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                const Text(
+                  'You have pushed the button this many times:',
+                ),
+                BlocBuilder<CounterBloc, int>(builder: (context, count) {
+                  return Text(
+                    '$count',
+                    style: Theme.of(context).textTheme.headlineMedium,
+                  );
+                }),
+              ],
             ),
-            floatingActionButton: FloatingActionButton(
-              onPressed: () => context.read<CounterBloc>().add(Increment()),
-              tooltip: 'Increment',
-              child: const Icon(Icons.add),
-            ), // This trailing comma makes auto-formatting nicer for build methods.
-          );
-        }
-      ),
+          ),
+          floatingActionButton: FloatingActionButton(
+            onPressed: () => context.read<CounterBloc>().add(Increment()),
+            tooltip: 'Increment',
+            child: const Icon(Icons.add),
+          ), // This trailing comma makes auto-formatting nicer for build methods.
+        );
+      }),
     );
-  }
-
-  void _showMessage(BuildContext context, String message) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
   }
 }

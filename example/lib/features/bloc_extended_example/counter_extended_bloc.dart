@@ -4,14 +4,13 @@ import 'package:example/common/random_message.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class CounterExtendedBloc extends Bloc<CounterEvent, CounterState> {
-  CounterExtendedBloc() : super(CounterState.initial()) {
+  CounterExtendedBloc() : super(const CounterState.initial()) {
     on<Increment>(
       _onIncrement,
     );
   }
 
-  FutureOr<void> _onIncrement(
-      Increment event, Emitter<CounterState> emit)  {
+  FutureOr<void> _onIncrement(Increment event, Emitter<CounterState> emit) {
     final count = state.count + 1;
     emit(CounterState(
       count: count,

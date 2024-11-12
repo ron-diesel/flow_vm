@@ -1,8 +1,8 @@
+// ignore_for_file: avoid_print
 import 'dart:math';
 
 import 'package:example/features/bloc_extended_example/bloc_counter_extended_screen.dart';
 import 'package:example/features/extended_counter/extended_counter_screen.dart';
-import 'package:flow_vm/flow_vm.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'utils/benchmark.dart';
@@ -48,4 +48,3 @@ void main() {
     });
   });
 }
-

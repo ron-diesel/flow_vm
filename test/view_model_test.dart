@@ -1,3 +1,4 @@
+// ignore_for_file: invalid_use_of_protected_member
 import 'dart:async';
 
 import 'package:flow_vm/flow_vm.dart';
@@ -33,7 +34,7 @@ void main() {
     });
 
     test('intent should trigger the action', () async {
-      final intentKey = 'testKey';
+      const intentKey = 'testKey';
 
       // Добавляем intent в поток
       viewModel.intent(
@@ -47,7 +48,7 @@ void main() {
     });
 
     test('dispose should cancel subscriptions and close controller', () async {
-      final intentKey = 'testKey';
+      const intentKey = 'testKey';
 
       // Добавляем intent в поток
       viewModel.intent(
