@@ -1,39 +1,85 @@
-<!--
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
+# flow_vm
 
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/guides/libraries/writing-package-pages).
+`flow_vm` is a state management solution for Flutter applications, providing a streamlined and efficient way to
+manage ViewModel-based architectures. It aims to make handling application state simpler,
+more predictable, and highly performant.
 
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-library-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/developing-packages).
--->
+### Key Features:
 
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+- MVVM Architecture: `flow_vm` is built around the MVVM (Model-View-ViewModel) architecture, providing a clear
+  separation of concerns.
+- Intents for MVI Architecture: Flow VM supports Intents, which extend the classic ViewModel pattern to make
+  the architecture more aligned with the MVI (Model-View-Intent) pattern. This allows for better handling of user
+  interactions and side effects, making the application state flow more predictable and easier to manage.
+- Ease of Use: Designed to be intuitive and easy to implement for managing state across Flutter applications.
+- Performance: Optimized for high performance, ensuring quick updates with minimal overhead.
 
-## Features
+## Getting Started
 
-TODO: List what your package can do. Maybe include images, gifs, or videos.
+Add `flow_vm` to your project's dependencies in `pubspec.yaml`:
 
-## Getting started
-
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
+```yaml
+dependencies:
+  flow_vm: ^1.0.0
+```
 
 ## Usage
 
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder.
-
 ```dart
-const like = 'sample';
+import 'package:example/features/simple_counter/simple_counter_vm.dart';
+import 'package:flow_vm/flow_vm.dart';
+import 'package:flutter/material.dart';
+
+class SimpleCounterVM extends SimpleViewModel {
+  late final DataFlow<int> counterFlow = this.dataFlow(0);
+
+  void onIncrement() {
+    update(counterFlow).change((it) => it + 1);
+  }
+}
+
+class SimpleCounterScreen extends StatelessWidget {
+  const SimpleCounterScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Disposer<SimpleCounterVM>(
+      create: (_) => SimpleCounterVM(),
+      builder: (context, viewModel) {
+        return Scaffold(
+          body: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                const Text(
+                  'You have pushed the button this many times:',
+                ),
+                FlowBuilder(
+                    flow: viewModel.counterFlow,
+                    builder: (context, count) {
+                      return Text(
+                        '$count',
+                        style: Theme
+                            .of(context)
+                            .textTheme
+                            .headlineMedium,
+                      );
+                    }),
+              ],
+            ),
+          ),
+          floatingActionButton: FloatingActionButton(
+            onPressed: viewModel.onIncrement,
+            tooltip: 'Increment',
+            child: const Icon(Icons.add),
+          ), // This trailing comma makes auto-formatting nicer for build methods.
+        );
+      },
+    );
+  }
+}
 ```
 
-## Additional information
+## License
 
-TODO: Tell users more about the package: where to find more information, how to
-contribute to the package, how to file issues, what response they can expect
-from the package authors, and more.
+This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.

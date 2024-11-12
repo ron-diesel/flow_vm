@@ -1,7 +1,25 @@
 name: flow_vm
-description: A new Flutter project.
-version: 0.0.1
-homepage:
+description: ViewModel-based state management
+version: 1.0.0
+
+repository: https://github.com/ron-diesel/flow_vm
+homepage: https://github.com/ron-diesel/flow_vm
+issue_tracker: https://github.com/ron-diesel/flow_vm/issues
+
+platforms:
+  android:
+  ios:
+  linux:
+  macos:
+  web:
+  windows:
+
+topics:
+  - di-framework
+  - ioc
+  - service-locator
+  - dependency-injection
+  - clean-architecture
 
 environment:
   sdk: '>=3.0.0 <4.0.0'

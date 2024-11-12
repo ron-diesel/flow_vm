@@ -1,5 +1,3 @@
-import 'package:example/features/bloc_example/bloc_counter_screen.dart';
-import 'package:example/features/simple_counter/simple_counter_screen.dart';
 import 'package:example/start_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -35,9 +33,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       home: const StartScreen(),
-    //  home: const BlocCounterScreen(),
+      //  home: const BlocCounterScreen(),
     );
   }
 }
-
-

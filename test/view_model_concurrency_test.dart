@@ -5,6 +5,8 @@ import 'package:flow_vm/flow_vm.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'utils/testable_view_model.dart';
+
 abstract class IntentAction {
   FutureOr<void> call(Updater update);
 }
@@ -35,8 +37,8 @@ void main() {
     setUp(() {
       print("-----------next test---------");
       viewModel = TestableViewModel();
-      flow1 = viewModel.newTestDataFlow(0);
-      flow2 = viewModel.newTestDataFlow(0);
+      flow1 = viewModel.testDataFlow(0);
+      flow2 = viewModel.testDataFlow(0);
     });
 
     tearDown(() {

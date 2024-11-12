@@ -1,13 +1,9 @@
 import 'package:flow_vm/flow_vm.dart';
 
-class SimpleCounterVM extends ViewModel {
-  late final DataFlow<int> counterFlow = newDataFlow(0);
+class SimpleCounterVM extends SimpleViewModel {
+  late final DataFlow<int> counterFlow = this.dataFlow(0);
 
-  void onIncrement() => intentNamed(
-        action: _onIncrement,
-      );
-
-  void _onIncrement(Updater emit) {
-    emit(counterFlow).change((it) => it + 1);
+  void onIncrement() {
+    update(counterFlow).change((it) => it + 1);
   }
 }

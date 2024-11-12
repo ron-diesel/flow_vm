@@ -4,11 +4,14 @@ import 'package:flow_vm/flow_vm.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'utils/testable_view_model.dart';
+
 abstract class IntentAction {
   FutureOr<void> call(Updater update);
 }
 
 class MockIntentAction extends Mock implements IntentAction {}
+
 class FakeUpdater extends Mock implements Updater {}
 
 void main() {
@@ -21,7 +24,7 @@ void main() {
       mockAction = MockIntentAction();
     });
 
-    setUpAll((){
+    setUpAll(() {
       registerFallbackValue(FakeUpdater());
     });
 
@@ -66,7 +69,7 @@ void main() {
     test('intentNamed should trigger action', () async {
       viewModel.intentNamed(action: mockAction);
 
-     await viewModel.awaitCurrentIntents();
+      await viewModel.awaitCurrentIntents();
       verify(() => mockAction.call(any())).called(1);
     });
   });
