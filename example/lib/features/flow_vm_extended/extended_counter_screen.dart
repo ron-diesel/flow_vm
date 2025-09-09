@@ -1,4 +1,4 @@
-import 'package:example/features/extended_counter/extended_counter_vm.dart';
+import 'package:example/features/flow_vm_extended/extended_counter_vm.dart';
 import 'package:flow_vm/flow_vm.dart';
 import 'package:flutter/material.dart';
 

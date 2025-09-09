@@ -1,13 +1,13 @@
 // ignore_for_file: avoid_print
 import 'dart:math';
 
-import 'package:example/features/bloc_extended_example/bloc_counter_extended_screen.dart';
-import 'package:example/features/extended_counter/extended_counter_screen.dart';
+import 'package:example/features/bloc_extended/bloc_counter_extended_screen.dart';
+import 'package:example/features/flow_vm_extended/extended_counter_screen.dart';
 import 'package:example/features/riverpod_extended/riverpod_extended_screen.dart';
 import 'package:example/features/stateful_extended/stateful_counter_extended_screen.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'utils/tap_rebuild_performance_test.dart';
+import 'utils/test_tap_rebuild_performance.dart';
 import 'utils/warming_up_widget.dart';
 
 void main() {
@@ -22,8 +22,7 @@ void main() {
 
   group("Benchmarks", () {
     testWidgets('Warming Up', (WidgetTester tester) async {
-      await tapRebuildPerformanceTest(
-          tester, const WarmingUpWidget());
+      await tapRebuildPerformanceTest(tester, const WarmingUpWidget());
     });
 
     final uutWidgets = {
@@ -37,8 +36,7 @@ void main() {
       final uut =
           uutWidgets.entries.elementAt(random.nextInt(uutWidgets.length));
       testWidgets(uut.key, (WidgetTester tester) async {
-        final elapsed =
-            await tapRebuildPerformanceTest(tester, uut.value());
+        final elapsed = await tapRebuildPerformanceTest(tester, uut.value());
         times[uut.key]!.add(elapsed);
       });
     }
