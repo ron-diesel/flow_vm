@@ -13,7 +13,7 @@ class RiverpodSimpleScreen extends StatelessWidget {
 }
 
 class _RiverpodSimpleScreen extends ConsumerWidget {
-  const _RiverpodSimpleScreen({Key? key}) : super(key: key);
+  const _RiverpodSimpleScreen();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

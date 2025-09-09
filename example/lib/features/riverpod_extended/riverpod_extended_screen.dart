@@ -18,7 +18,7 @@ class RiverpodExtendedScreen extends StatelessWidget {
 }
 
 class _RiverpodExtendedScreen extends ConsumerWidget {
-  const _RiverpodExtendedScreen({Key? key}) : super(key: key);
+  const _RiverpodExtendedScreen();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
