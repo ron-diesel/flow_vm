@@ -34,6 +34,8 @@ class FlowNotifier<T> extends ChangeNotifier implements ValueListenable<T> {
     return _value;
   }
 
+  bool get hasValue => _isInitialized;
+
   /// Sets a new value and notifies listeners if the value has changed.
   set value(T newValue) {
     if (_isInitialized && _value == newValue) {

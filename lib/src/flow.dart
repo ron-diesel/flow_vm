@@ -50,6 +50,8 @@ final class ActionFlow<T> extends FlowVm<T> {
   @visibleForTesting
   ActionFlow() : super(FlowNotifier(value: null, isLazy: true));
 
+  bool get hasValue => _notifier.hasValue;
+
   /// Sets a value to the [FlowNotifier], forcing the update.
   @override
   void _set(T value) {
