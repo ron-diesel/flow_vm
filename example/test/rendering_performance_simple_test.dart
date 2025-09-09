@@ -2,12 +2,12 @@
 import 'dart:math';
 
 import 'package:example/features/bloc_simple/bloc_counter_screen.dart';
+import 'package:example/features/flow_vm_simple/simple_counter_screen.dart';
 import 'package:example/features/riverpod_simple/riverpod_simple_screen.dart';
-import 'package:example/features/simple_counter/simple_counter_screen.dart';
 import 'package:example/features/stateful_simple/stateful_counter_screen.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'utils/tap_rebuild_performance_test.dart';
+import 'utils/test_tap_rebuild_performance.dart';
 import 'utils/warming_up_widget.dart';
 
 void main() {
