@@ -25,6 +25,7 @@ dependencies:
 
 ## Usage
 
+ViewModel example:
 ```dart
 import 'package:example/features/simple_counter/simple_counter_vm.dart';
 import 'package:flow_vm/flow_vm.dart';
@@ -77,6 +78,24 @@ class SimpleCounterScreen extends StatelessWidget {
       },
     );
   }
+}
+```
+
+MVI/ViewModel+ example:
+```dart
+class ExtendedCounterVM extends ViewModel {
+  late final stateFlow = this.dataFlow(0);
+  late final actionsFlow = this.actionFlow<String>(); // side effects
+
+  void onIncrement() =>
+      intent(
+        queueKey: #onIncrement,
+        action: (Updater update) {
+          final count = stateFlow.value + 1;
+          update(stateFlow).set(count);
+          update(actionsFlow).set("show success toast");
+        },
+      );
 }
 ```
 

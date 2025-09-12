@@ -23,21 +23,21 @@ abstract class ViewModel extends _FlowManager {
 
   /// A map to keep track of active intent subscriptions based on queue keys.
   @visibleForTesting
-  final Map<Object, StreamSubscription<Intent>> subscriptions = {};
+  final Map<Symbol, StreamSubscription<Intent>> subscriptions = {};
 
   /// A list of currently active intents.
   final List<Intent> _activeIntents = [];
 
   /// Adds a new intent to the queue.
   ///
-  /// - [queueKey]: The key used to manage the queue for this intent.
+  /// - [queueKey]: The key used to manage the queue for this intent.( use #nameOfMethod)
   /// - [transformer]: An optional transformer for transforming the intent stream.
   /// - [action]: The action associated with the intent.
   ///
   /// If the queueKey has no existing subscription, a new subscription is created.
   @protected
   void intent({
-    required Object queueKey,
+    required Symbol queueKey,
     IntentTransformer? transformer,
     required IntentAction action,
   }) {
@@ -46,20 +46,6 @@ abstract class ViewModel extends _FlowManager {
     }
 
     intentController.add(Intent(action: action, intentKey: queueKey));
-  }
-
-  /// Adds a new intent using a named action.
-  ///
-  /// - [transformer]: An optional transformer for transforming the intent stream.
-  /// - [action]: The action associated with the intent.
-  ///
-  /// Uses the hash code of the action as the queue key.
-  @protected
-  void intentNamed({
-    IntentTransformer? transformer,
-    required IntentAction action,
-  }) {
-    intent(queueKey: action.hashCode, action: action, transformer: transformer);
   }
 
   /// Disposes of the ViewModel by closing the intent controller and canceling all subscriptions.
@@ -79,7 +65,7 @@ abstract class ViewModel extends _FlowManager {
   /// Subscribes to intents for the given [queueKey] using the provided [transformer].
   ///
   /// The subscription listens to the transformed stream and adds it to the list of subscriptions.
-  void _subscribe(Object queueKey, IntentTransformer transformer) {
+  void _subscribe(Symbol queueKey, IntentTransformer transformer) {
     final stream =
         intentController.stream.where((intent) => intent.intentKey == queueKey);
 
