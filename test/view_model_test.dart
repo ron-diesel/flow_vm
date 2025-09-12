@@ -34,11 +34,9 @@ void main() {
     });
 
     test('intent should trigger the action', () async {
-      const intentKey = 'testKey';
-
       // Добавляем intent в поток
       viewModel.intent(
-        queueKey: intentKey,
+        queueKey: #mockAction,
         action: mockAction,
       );
 
@@ -48,30 +46,21 @@ void main() {
     });
 
     test('dispose should cancel subscriptions and close controller', () async {
-      const intentKey = 'testKey';
-
       // Добавляем intent в поток
       viewModel.intent(
-        queueKey: intentKey,
+        queueKey: #mockAction,
         action: mockAction,
       );
 
       // Подтверждаем, что есть подписка на intentKey
-      expect(viewModel.subscriptions.containsKey(intentKey), isTrue);
+      expect(viewModel.subscriptions.containsKey(#mockAction), isTrue);
 
       // Вызываем dispose
       viewModel.dispose();
 
       // Проверяем, что подписка удалена и контроллер закрыт
-      expect(viewModel.subscriptions.containsKey(intentKey), isFalse);
+      expect(viewModel.subscriptions.containsKey(#mockAction), isFalse);
       expect(viewModel.intentController.isClosed, isTrue);
-    });
-
-    test('intentNamed should trigger action', () async {
-      viewModel.intentNamed(action: mockAction);
-
-      await viewModel.awaitCurrentIntents();
-      verify(() => mockAction.call(any())).called(1);
     });
   });
 }

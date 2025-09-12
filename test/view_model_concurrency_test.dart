@@ -49,11 +49,13 @@ void main() {
     test('concurrent and droppable handling of different intents', () async {
       for (int i = 0; i < 10; i++) {
         await Future.delayed(const Duration(milliseconds: 1));
-        viewModel.intentNamed(
+        viewModel.intent(
+          queueKey: #action1,
           action: action1,
           transformer: droppable(),
         );
-        viewModel.intentNamed(
+        viewModel.intent(
+          queueKey: #action2,
           action: action2,
           transformer: concurrent(),
         );
@@ -68,11 +70,13 @@ void main() {
     test('sequential and restartable handling of different intents', () async {
       for (int i = 0; i < 10; i++) {
         await Future.delayed(const Duration(milliseconds: 1));
-        viewModel.intentNamed(
+        viewModel.intent(
+          queueKey: #action1,
           action: action1,
           transformer: sequential(),
         );
-        viewModel.intentNamed(
+        viewModel.intent(
+          queueKey: #action2,
           action: action2,
           transformer: restartable(),
         );
