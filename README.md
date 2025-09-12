@@ -89,7 +89,7 @@ class ExtendedCounterVM extends ViewModel {
 
   void onIncrement() =>
       intent(
-        queueKey: #onIncrement,
+        intentKey: #onIncrement,
         action: (Updater update) {
           final count = stateFlow.value + 1;
           update(stateFlow).set(count);

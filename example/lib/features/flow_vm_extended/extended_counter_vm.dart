@@ -8,7 +8,7 @@ class ExtendedCounterVM extends ViewModel {
   late final messageFlow = this.dataFlow("");
 
   void onIncrement() => intent(
-        queueKey: #onIncrement,
+        intentKey: #onIncrement,
         action: (Updater update) {
           final count = counterFlow.value + 1;
           update(counterFlow).set(count);

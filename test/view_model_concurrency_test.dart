@@ -50,12 +50,12 @@ void main() {
       for (int i = 0; i < 10; i++) {
         await Future.delayed(const Duration(milliseconds: 1));
         viewModel.intent(
-          queueKey: #action1,
+          intentKey: #action1,
           action: action1,
           transformer: droppable(),
         );
         viewModel.intent(
-          queueKey: #action2,
+          intentKey: #action2,
           action: action2,
           transformer: concurrent(),
         );
@@ -71,12 +71,12 @@ void main() {
       for (int i = 0; i < 10; i++) {
         await Future.delayed(const Duration(milliseconds: 1));
         viewModel.intent(
-          queueKey: #action1,
+          intentKey: #action1,
           action: action1,
           transformer: sequential(),
         );
         viewModel.intent(
-          queueKey: #action2,
+          intentKey: #action2,
           action: action2,
           transformer: restartable(),
         );
