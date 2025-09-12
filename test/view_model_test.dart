@@ -36,7 +36,7 @@ void main() {
     test('intent should trigger the action', () async {
       // Добавляем intent в поток
       viewModel.intent(
-        queueKey: #mockAction,
+        intentKey: #mockAction,
         action: mockAction,
       );
 
@@ -48,7 +48,7 @@ void main() {
     test('dispose should cancel subscriptions and close controller', () async {
       // Добавляем intent в поток
       viewModel.intent(
-        queueKey: #mockAction,
+        intentKey: #mockAction,
         action: mockAction,
       );
 

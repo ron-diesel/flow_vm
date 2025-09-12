@@ -4,6 +4,7 @@ import 'package:flow_vm/src/disposable.dart';
 import 'package:flow_vm/src/flow_notifier.dart';
 import 'package:flow_vm/src/intent.dart';
 import 'package:flow_vm/src/updater.dart';
+import 'package:flow_vm/src/view_model_observer.dart';
 import 'package:flutter/foundation.dart';
 import 'package:stream_transform/stream_transform.dart';
 
@@ -25,27 +26,47 @@ abstract class ViewModel extends _FlowManager {
   @visibleForTesting
   final Map<Symbol, StreamSubscription<Intent>> subscriptions = {};
 
+  final List<ViewModelObserver> _observers = [];
+
   /// A list of currently active intents.
   final List<Intent> _activeIntents = [];
 
+  @mustCallSuper
+  void addObserver(ViewModelObserver observer) {
+    _observers.add(observer);
+  }
+
+  @mustCallSuper
+  void removeObserver(ViewModelObserver observer) {
+    _observers.remove(observer);
+  }
+
+  @mustCallSuper
+  void removeAllObservers() {
+    _observers.clear();
+  }
+
   /// Adds a new intent to the queue.
   ///
-  /// - [queueKey]: The key used to manage the queue for this intent.( use #nameOfMethod)
+  /// - [intentKey]: The key used to manage the queue for this intent.( use #nameOfMethod)
   /// - [transformer]: An optional transformer for transforming the intent stream.
   /// - [action]: The action associated with the intent.
   ///
-  /// If the queueKey has no existing subscription, a new subscription is created.
+  /// If the intentKey has no existing subscription, a new subscription is created.
   @protected
   void intent({
-    required Symbol queueKey,
+    required Symbol intentKey,
     IntentTransformer? transformer,
     required IntentAction action,
   }) {
-    if (!subscriptions.containsKey(queueKey)) {
-      _subscribe(queueKey, transformer ?? _defaultTransformer);
+    for (var observer in _observers) {
+      observer.onIntentStart(intentKey);
+    }
+    if (!subscriptions.containsKey(intentKey)) {
+      _subscribe(intentKey, transformer ?? _defaultTransformer);
     }
 
-    intentController.add(Intent(action: action, intentKey: queueKey));
+    intentController.add(Intent(action: action, intentKey: intentKey));
   }
 
   /// Disposes of the ViewModel by closing the intent controller and canceling all subscriptions.
@@ -62,18 +83,18 @@ abstract class ViewModel extends _FlowManager {
     super.dispose();
   }
 
-  /// Subscribes to intents for the given [queueKey] using the provided [transformer].
+  /// Subscribes to intents for the given [intentKey] using the provided [transformer].
   ///
   /// The subscription listens to the transformed stream and adds it to the list of subscriptions.
-  void _subscribe(Symbol queueKey, IntentTransformer transformer) {
-    final stream =
-        intentController.stream.where((intent) => intent.intentKey == queueKey);
+  void _subscribe(Symbol intentKey, IntentTransformer transformer) {
+    final stream = intentController.stream
+        .where((intent) => intent.intentKey == intentKey);
 
     final transformedStream = transformer(
       stream,
       (intent) {
         _activeIntents.add(intent);
-        final updater = UpdaterImpl._();
+        final updater = UpdaterImpl._(intent.intentKey, () => _observers);
 
         final controller = StreamController<Intent>.broadcast(
           sync: true,
@@ -82,7 +103,12 @@ abstract class ViewModel extends _FlowManager {
 
         Future<void> handleIntent() async {
           try {
-            if (!controller.isClosed) await intent.execute(updater);
+            if (!controller.isClosed) {
+              await intent.execute(updater);
+              for (var observer in _observers) {
+                observer.onIntentExecuted(intent.intentKey);
+              }
+            }
           } catch (error, stackTrace) {
             onError(error, stackTrace);
             rethrow;
@@ -99,7 +125,7 @@ abstract class ViewModel extends _FlowManager {
 
     final subscription = transformedStream.listen(null);
 
-    subscriptions[queueKey] = subscription;
+    subscriptions[intentKey] = subscription;
   }
 
   /// Awaits all currently active intents to complete.
@@ -119,7 +145,7 @@ abstract class ViewModel extends _FlowManager {
 abstract class SimpleViewModel extends ViewModel {
   /// Provides an instance of `Updater` for state updates.
   Updater get update => _update;
-  final UpdaterImpl _update = UpdaterImpl._();
+  late final UpdaterImpl _update = UpdaterImpl._(#update, () => _observers);
 
   @override
   @mustCallSuper
@@ -131,7 +157,10 @@ abstract class SimpleViewModel extends ViewModel {
 
 /// An implementation of `Updater` used to manage state changes.
 class UpdaterImpl implements Updater {
-  UpdaterImpl._();
+  UpdaterImpl._(this._intentKey, this._observersGetter);
+
+  final ValueGetter<List<ViewModelObserver>> _observersGetter;
+  final Symbol _intentKey;
 
   bool _isCanceled = false;
 
@@ -140,12 +169,23 @@ class UpdaterImpl implements Updater {
   /// If the updater is canceled, returns a dummy flow that does not allow modifications.
   @override
   MutableFlow<T> call<T>(FlowVm<T> flow) {
-    return _isCanceled ? _DummyFlow() : _MutableFlow<T>(flow);
+    if (_isCanceled) {
+      return _DummyFlow();
+    } else {
+      return _MutableFlow<T>(flow, (value) {
+        for (var observer in _observersGetter()) {
+          observer.onFlowUpdated(_intentKey, flow, value);
+        }
+      });
+    }
   }
 
   /// Cancels the updater, preventing further state modifications.
   void cancel() {
     _isCanceled = true;
+    for (var observer in _observersGetter()) {
+      observer.onIntentCanceled(_intentKey);
+    }
   }
 }
 

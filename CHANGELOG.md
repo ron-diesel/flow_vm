@@ -1,3 +1,7 @@
+## 1.0.4
+
+* Added observers API
+
 ## 1.0.3
 
 * Enhanced intent API

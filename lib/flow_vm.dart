@@ -7,3 +7,4 @@ export 'package:flow_vm/src/flow_listener.dart';
 export 'package:flow_vm/src/intent.dart';
 export 'package:flow_vm/src/updater.dart';
 export 'package:flow_vm/src/view_model.dart';
+export 'package:flow_vm/src/view_model_observer.dart';

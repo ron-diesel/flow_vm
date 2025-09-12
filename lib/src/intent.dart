@@ -35,5 +35,5 @@ class Intent {
   }
 
   /// The key used to uniquely identify this intent.
-  final Object intentKey;
+  final Symbol intentKey;
 }

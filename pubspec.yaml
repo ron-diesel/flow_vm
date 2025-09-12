@@ -1,6 +1,6 @@
 name: flow_vm
 description: State management solution for Flutter applications, providing a streamlined and efficient way to manage ViewModel-based architectures.
-version: 1.0.3
+version: 1.0.4
 
 repository: https://github.com/ron-diesel/flow_vm
 homepage: https://github.com/ron-diesel/flow_vm
