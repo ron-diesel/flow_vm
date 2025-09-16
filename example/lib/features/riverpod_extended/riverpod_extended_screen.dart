@@ -2,7 +2,7 @@ import 'package:example/common/random_message.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-// Провайдеры для управления состоянием
+// Providers for state management
 final counterProvider = StateProvider<int>((ref) => 0);
 final sumProvider = StateProvider<int>((ref) => 0);
 final logsProvider = StateProvider<List<int>>((ref) => []);

@@ -30,8 +30,11 @@ class Intent {
   /// Returns the [Intent] itself after the action has been executed.
   Future<Intent> execute(Updater updater) async {
     await _action(updater);
-    _completer.complete();
     return this;
+  }
+
+  void complete() {
+    _completer.complete();
   }
 
   /// The key used to uniquely identify this intent.

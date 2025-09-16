@@ -1,3 +1,9 @@
+## 1.1.0
+
+* Extended Observer with Mutation support
+* Introduced IntentTransformer presets in Transformer
+* Improved test coverage
+
 ## 1.0.4
 
 * Added observers API

@@ -28,13 +28,6 @@ sealed class FlowVm<T> implements Disposable {
   @visibleForTesting
   void testSet(T value) => _set(value);
 
-  /// Changes the current value by applying the given [change] function.
-  T _change(Change<T> change) {
-    final newValue = change(value);
-    _set(newValue);
-    return newValue;
-  }
-
   /// Returns the current value of the [FlowNotifier].
   T get value => _notifier.value;
 }
@@ -75,20 +68,30 @@ class _MutableFlow<T> extends MutableFlow<T> {
   _MutableFlow(this._flow, this._onUpdated);
 
   final FlowVm<T> _flow;
-  final ValueSetter<T> _onUpdated;
+  final ValueSetter<Mutation<T>> _onUpdated;
 
   /// Sets a new value to the flow.
   @override
   void set(T value) {
+    final mutation = _getMutation(value);
     _flow._set(value);
-    _onUpdated(value);
+    _onUpdated(mutation);
   }
 
   /// Changes the current value by applying the given [change] function.
   @override
   void change(Change<T> change) {
-    final value = _flow._change(change);
-    _onUpdated(value);
+    final newValue = change(_flow.value);
+    final mutation = _getMutation(newValue);
+    _flow._set(newValue);
+    _onUpdated(mutation);
+  }
+
+  Mutation<T> _getMutation(T newValue) {
+    return Mutation(
+      oldValue: _flow._notifier.hasValue ? _flow.value : null,
+      newValue: newValue,
+    );
   }
 }
 

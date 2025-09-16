@@ -1,12 +1,8 @@
 import 'dart:async';
 
-import 'package:flow_vm/src/disposable.dart';
+import 'package:flow_vm/flow_vm.dart';
 import 'package:flow_vm/src/flow_notifier.dart';
-import 'package:flow_vm/src/intent.dart';
-import 'package:flow_vm/src/updater.dart';
-import 'package:flow_vm/src/view_model_observer.dart';
 import 'package:flutter/foundation.dart';
-import 'package:stream_transform/stream_transform.dart';
 
 part 'flow.dart';
 
@@ -63,7 +59,10 @@ abstract class ViewModel extends _FlowManager {
       observer.onIntentStart(intentKey);
     }
     if (!subscriptions.containsKey(intentKey)) {
-      _subscribe(intentKey, transformer ?? _defaultTransformer);
+      _subscribe(
+        intentKey,
+        transformer ?? Transformers.defaultTransformer,
+      );
     }
 
     intentController.add(Intent(action: action, intentKey: intentKey));
@@ -113,6 +112,7 @@ abstract class ViewModel extends _FlowManager {
             onError(error, stackTrace);
             rethrow;
           } finally {
+            intent.complete();
             _activeIntents.remove(intent);
             if (!controller.isClosed) controller.close();
           }
@@ -125,6 +125,7 @@ abstract class ViewModel extends _FlowManager {
 
     final subscription = transformedStream.listen(null);
 
+    subscriptions[intentKey]?.cancel();
     subscriptions[intentKey] = subscription;
   }
 
@@ -132,8 +133,10 @@ abstract class ViewModel extends _FlowManager {
   ///
   /// Useful for testing purposes to ensure all intents have finished processing.
   @visibleForTesting
-  Future<void> awaitCurrentIntents() =>
-      Future.wait(_activeIntents.map((intent) => intent.completerFuture));
+  Future<void> awaitCurrentIntents() async {
+    await Future.delayed(Duration.zero);
+    await Future.wait(_activeIntents.map((intent) => intent.completerFuture));
+  }
 
   /// Handles errors that occur during intent execution.
   ///
@@ -145,7 +148,7 @@ abstract class ViewModel extends _FlowManager {
 abstract class SimpleViewModel extends ViewModel {
   /// Provides an instance of `Updater` for state updates.
   Updater get update => _update;
-  late final UpdaterImpl _update = UpdaterImpl._(#update, () => _observers);
+  late final UpdaterImpl _update = UpdaterImpl._(null, () => _observers);
 
   @override
   @mustCallSuper
@@ -160,7 +163,7 @@ class UpdaterImpl implements Updater {
   UpdaterImpl._(this._intentKey, this._observersGetter);
 
   final ValueGetter<List<ViewModelObserver>> _observersGetter;
-  final Symbol _intentKey;
+  final Symbol? _intentKey;
 
   bool _isCanceled = false;
 
@@ -183,8 +186,11 @@ class UpdaterImpl implements Updater {
   /// Cancels the updater, preventing further state modifications.
   void cancel() {
     _isCanceled = true;
-    for (var observer in _observersGetter()) {
-      observer.onIntentCanceled(_intentKey);
+    final intentKey = _intentKey;
+    if (intentKey != null) {
+      for (var observer in _observersGetter()) {
+        observer.onIntentCanceled(intentKey);
+      }
     }
   }
 }
@@ -194,14 +200,3 @@ typedef IntentAction = FutureOr<void> Function(Updater update);
 
 /// A function type representing a mapper that transforms an `Intent`.
 typedef IntentMapper = Stream<Intent> Function(Intent intent);
-
-/// A function type representing a transformer that transforms a stream of `Intent` objects.
-typedef IntentTransformer = Stream<Intent> Function(
-  Stream<Intent> intents,
-  IntentMapper mapper,
-);
-
-/// The default intent transformer that uses `concurrentAsyncExpand` to process intents concurrently.
-IntentTransformer get _defaultTransformer {
-  return (intents, mapper) => intents.concurrentAsyncExpand(mapper);
-}
