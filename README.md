@@ -1,42 +1,41 @@
 # flow_vm
 
-`flow_vm` is a state management solution for Flutter applications, providing a streamlined and efficient way to
-manage ViewModel-based architectures. It aims to make handling application state simpler,
-more predictable, and highly performant.
+[![pub.dev](https://img.shields.io/pub/v/flow_vm.svg)](https://pub.dev/packages/flow_vm)
+[![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 
-### Key Features:
+`flow_vm` is a lightweight, fast, and predictable state management library for Flutter based on the ViewModel concept with first-class support for MVVM and MVI (via Intents).
 
-- MVVM Architecture: `flow_vm` is built around the MVVM (Model-View-ViewModel) architecture, providing a clear
-  separation of concerns.
-- Intents for MVI Architecture: Flow VM supports Intents, which extend the classic ViewModel pattern to make
-  the architecture more aligned with the MVI (Model-View-Intent) pattern. This allows for better handling of user
-  interactions and side effects, making the application state flow more predictable and easier to manage.
-- Ease of Use: Designed to be intuitive and easy to implement for managing state across Flutter applications.
-- Performance: Optimized for high performance, ensuring quick updates with minimal overhead.
+## Highlights
 
-## Getting Started
+- MVVM core with a small, focused API
+- Intents for MVI-style state transitions and side effects
+- Widgets for building and listening to data flows
+- Built-in intent transformers (concurrent, sequential, debounced)
+- Observer hooks for analytics/debugging of intents and mutations
+- High performance with minimal rebuilds
+- Type-safe and testable by design
 
-Add `flow_vm` to your project's dependencies in `pubspec.yaml`:
+## Install
+
+Add `flow_vm` to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  flow_vm: ^1.0.0
+  flow_vm: ^1.1.0
 ```
 
-## Usage
+## Quick Start
 
-ViewModel example:
+Create a simple `ViewModel` with a `DataFlow` and render it with `FlowBuilder`:
+
 ```dart
-import 'package:example/features/simple_counter/simple_counter_vm.dart';
 import 'package:flow_vm/flow_vm.dart';
 import 'package:flutter/material.dart';
 
 class SimpleCounterVM extends SimpleViewModel {
-  late final DataFlow<int> counterFlow = this.dataFlow(0);
+  late final DataFlow<int> counterFlow = dataFlow(0);
 
-  void onIncrement() {
-    update(counterFlow).change((it) => it + 1);
-  }
+  void onIncrement() => update(counterFlow).change((value) => value + 1);
 }
 
 class SimpleCounterScreen extends StatelessWidget {
@@ -51,21 +50,15 @@ class SimpleCounterScreen extends StatelessWidget {
           body: Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                const Text(
-                  'You have pushed the button this many times:',
-                ),
+              children: [
+                const Text('You have pushed the button this many times:'),
                 FlowBuilder(
-                    flow: viewModel.counterFlow,
-                    builder: (context, count) {
-                      return Text(
-                        '$count',
-                        style: Theme
-                            .of(context)
-                            .textTheme
-                            .headlineMedium,
-                      );
-                    }),
+                  flow: viewModel.counterFlow,
+                  builder: (context, count) => Text(
+                    '$count',
+                    style: Theme.of(context).textTheme.headlineMedium,
+                  ),
+                ),
               ],
             ),
           ),
@@ -73,7 +66,7 @@ class SimpleCounterScreen extends StatelessWidget {
             onPressed: viewModel.onIncrement,
             tooltip: 'Increment',
             child: const Icon(Icons.add),
-          ), // This trailing comma makes auto-formatting nicer for build methods.
+          ),
         );
       },
     );
@@ -81,24 +74,100 @@ class SimpleCounterScreen extends StatelessWidget {
 }
 ```
 
-MVI/ViewModel+ example:
+## Intents (MVI)
+
+Use `intent` to model user actions and orchestrate state updates and side effects in one place.
+
 ```dart
 class ExtendedCounterVM extends ViewModel {
-  late final stateFlow = this.dataFlow(0);
-  late final actionsFlow = this.actionFlow<String>(); // side effects
+  late final stateFlow = dataFlow(0);
+  late final actionsFlow = actionFlow<String>(); // side effects
 
-  void onIncrement() =>
-      intent(
+  void onIncrement() => intent(
         intentKey: #onIncrement,
         action: (Updater update) {
-          final count = stateFlow.value + 1;
-          update(stateFlow).set(count);
-          update(actionsFlow).set("show success toast");
+          final next = stateFlow.value + 1;
+          update(stateFlow).set(next);
+          update(actionsFlow).set('show success toast');
         },
       );
 }
 ```
 
+## Intent transformers
+
+Control concurrency and handler behavior for intents. By default, processing is concurrent. You can choose `sequential`, `concurrent`, `debouncedRestartable`, or `debouncedSequential`.
+
+```dart
+class SearchVM extends ViewModel {
+  final query = dataFlow('');
+  final results = dataFlow<List<String>>([]);
+
+  void onQueryChanged(String text) => intent(
+        intentKey: #onQueryChanged,
+        transformer: Transformers.debouncedRestartable(const Duration(milliseconds: 300)),
+        action: (update) async {
+          update(query).set(text);
+          final items = await fetch(text);
+          update(results).set(items);
+        },
+      );
+}
+```
+
+Available transformers: `Transformers.concurrent()` (default), `Transformers.sequential()`, `Transformers.debouncedRestartable(duration)`, `Transformers.debouncedSequential(duration)`.
+
+## ViewModelObserver
+
+Observe the lifecycle of intents and flow mutations — useful for logging, analytics, and debugging.
+
+```dart
+class LoggerObserver implements ViewModelObserver {
+  @override
+  void onIntentStart(Symbol intentKey) => debugPrint('start: $intentKey');
+
+  @override
+  void onIntentExecuted(Symbol intentKey) => debugPrint('done: $intentKey');
+
+  @override
+  void onFlowUpdated(Symbol? intentKey, FlowVm flow, Mutation change) {
+    debugPrint('update($intentKey): ${change.oldValue} -> ${change.newValue}');
+  }
+
+  @override
+  void onIntentCanceled(Symbol intentKey) => debugPrint('canceled: $intentKey');
+}
+
+final vm = SimpleCounterVM()..addObserver(LoggerObserver());
+```
+
+## Widgets
+
+- `FlowBuilder<T>`: Rebuilds UI when `DataFlow<T>` emits new values.
+- `FlowListener<T>`: Listens to actions/one-off events without rebuilding UI.
+- `Disposer<VM>`: Creates and disposes a `ViewModel` for a subtree.
+
+## Why flow_vm?
+
+- Clear separation of state and side effects
+- No boilerplate code generators
+- Simple migration path from classic MVVM to MVI
+- Works across all Flutter platforms
+
+## Example App
+
+Explore the examples under `example/` showcasing simple and extended patterns with Bloc and Riverpod comparisons.
+
+## Testing
+
+The repository includes unit and widget tests for `ViewModel`, observers, listeners, and concurrency. Run with `flutter test`.
+
+## Roadmap
+
+- More recipes and docs
+- DevTools integration examples
+- Additional intent transformers and utilities
+
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
+MIT License — see [LICENSE](./LICENSE).
