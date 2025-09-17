@@ -177,7 +177,7 @@ class UpdaterImpl implements Updater {
     } else {
       return _MutableFlow<T>(flow, (value) {
         for (var observer in _observersGetter()) {
-          observer.onFlowUpdated(_intentKey, flow, value);
+          observer.onFlowUpdated<T>(_intentKey, flow, value);
         }
       });
     }
