@@ -5,10 +5,10 @@ abstract class ViewModelObserver {
 
   void onIntentExecuted(Symbol intentKey) {}
 
-  void onFlowUpdated(
+  void onFlowUpdated<T>(
     Symbol? intentKey,
-    FlowVm<dynamic> flow,
-    Mutation<dynamic> change,
+    FlowVm<T> flow,
+    Mutation<T> change,
   ) {}
 
   void onIntentCanceled(Symbol intentKey) {}

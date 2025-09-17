@@ -4,7 +4,9 @@ import 'package:mocktail/mocktail.dart';
 
 class MockObserver extends Mock implements ViewModelObserver {}
 
-class FakeMutation extends Fake implements Mutation<dynamic> {}
+class FakeMutationInt extends Fake implements Mutation<int> {}
+
+class FakeMutationString extends Fake implements Mutation<String> {}
 
 class FakeSymbol extends Fake implements Symbol {}
 
@@ -15,7 +17,8 @@ void main() {
     late MockObserver mockObserver;
 
     setUpAll(() {
-      registerFallbackValue(FakeMutation());
+      registerFallbackValue(FakeMutationInt());
+      registerFallbackValue(FakeMutationString());
       registerFallbackValue(FakeSymbol());
     });
 
@@ -36,11 +39,11 @@ void main() {
       simpleViewModel.onIncrementSet();
       await viewModel.awaitCurrentIntents();
       verify(
-        () => mockObserver.onFlowUpdated(
+        () => mockObserver.onFlowUpdated<int>(
             any(), simpleViewModel.counterFlow, any()),
       ).called(1);
       verify(
-        () => mockObserver.onFlowUpdated(
+        () => mockObserver.onFlowUpdated<String>(
             any(), simpleViewModel.actionsFlow, any()),
       ).called(1);
       verifyNever(() => mockObserver.onIntentStart(any()));
@@ -52,11 +55,11 @@ void main() {
       simpleViewModel.onIncrementChange();
       await viewModel.awaitCurrentIntents();
       verify(
-        () => mockObserver.onFlowUpdated(
+        () => mockObserver.onFlowUpdated<int>(
             any(), simpleViewModel.counterFlow, any()),
       ).called(1);
       verifyNever(
-        () => mockObserver.onFlowUpdated(
+        () => mockObserver.onFlowUpdated<String>(
             any(), simpleViewModel.actionsFlow, any()),
       );
       verifyNever(() => mockObserver.onIntentStart(any()));
@@ -69,10 +72,12 @@ void main() {
 
       await viewModel.awaitCurrentIntents();
       verify(
-        () => mockObserver.onFlowUpdated(any(), viewModel.counterFlow, any()),
+        () => mockObserver.onFlowUpdated<int>(
+            any(), viewModel.counterFlow, any()),
       ).called(1);
       verify(
-        () => mockObserver.onFlowUpdated(any(), viewModel.actionsFlow, any()),
+        () => mockObserver.onFlowUpdated<String>(
+            any(), viewModel.actionsFlow, any()),
       ).called(1);
       verify(() => mockObserver.onIntentStart(any())).called(1);
       verify(() => mockObserver.onIntentExecuted(any())).called(1);
@@ -84,10 +89,12 @@ void main() {
 
       await viewModel.awaitCurrentIntents();
       verify(
-        () => mockObserver.onFlowUpdated(any(), viewModel.counterFlow, any()),
+        () => mockObserver.onFlowUpdated<int>(
+            any(), viewModel.counterFlow, any()),
       ).called(1);
       verifyNever(
-        () => mockObserver.onFlowUpdated(any(), viewModel.actionsFlow, any()),
+        () => mockObserver.onFlowUpdated<String>(
+            any(), viewModel.actionsFlow, any()),
       );
       verify(() => mockObserver.onIntentStart(any())).called(1);
       verify(() => mockObserver.onIntentExecuted(any())).called(1);

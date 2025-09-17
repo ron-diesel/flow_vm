@@ -21,7 +21,7 @@ Add `flow_vm` to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  flow_vm: ^1.1.0
+  flow_vm: ^1.1.1
 ```
 
 ## Quick Start

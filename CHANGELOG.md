@@ -1,3 +1,7 @@
+## 1.1.1
+
+* Added generic to onFlowUpdated
+
 ## 1.1.0
 
 * Extended Observer with Mutation support
