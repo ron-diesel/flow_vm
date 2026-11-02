@@ -1,3 +1,7 @@
+## 1.2.0
+
+* Added Transformers.droppable
+
 ## 1.1.1
 
 * Added generic to onFlowUpdated

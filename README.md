@@ -115,7 +115,9 @@ class SearchVM extends ViewModel {
 }
 ```
 
-Available transformers: `Transformers.concurrent()` (default), `Transformers.sequential()`, `Transformers.debouncedRestartable(duration)`, `Transformers.debouncedSequential(duration)`.
+Available transformers: `Transformers.concurrent()` (default), `Transformers.sequential()`, `Transformers.droppable()`, `Transformers.debouncedRestartable(duration)`, `Transformers.debouncedSequential(duration)`.
+
+`Transformers.droppable()` ignores an intent while the previous one with the same key is still running, so a repeated tap or call does not start the same work twice.
 
 ## ViewModelObserver
 

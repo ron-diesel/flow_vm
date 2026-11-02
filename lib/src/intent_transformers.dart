@@ -55,6 +55,25 @@ class Transformers {
   static IntentTransformer concurrent() {
     return (intents, mapper) => intents.concurrentAsyncExpand(mapper);
   }
+
+  /// Drops intents that arrive while the previous one is still running.
+  ///
+  /// The first intent starts at once. Intents that arrive before its mapped
+  /// stream completes are ignored. Once it completes, normally or with an
+  /// error, the next intent starts. Implemented with `concurrentAsyncExpand`
+  /// behind a running flag.
+  ///
+  /// Useful for work that must not run twice at the same time, such as an
+  /// initial load or a retry.
+  static IntentTransformer droppable() {
+    return (intents, mapper) {
+      var isRunning = false;
+      return intents.where((_) => !isRunning).concurrentAsyncExpand((intent) {
+        isRunning = true;
+        return mapper(intent).tap(null, onDone: () => isRunning = false);
+      });
+    };
+  }
 }
 
 /// Signature of an intent transformer function.

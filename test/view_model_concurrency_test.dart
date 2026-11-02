@@ -264,4 +264,103 @@ void main() {
       expect(flow1.value, 3);
     });
   });
+
+  group('Transformers.droppable', () {
+    late TestableViewModel viewModel;
+    late DataFlow<int> flow;
+
+    setUp(() {
+      viewModel = TestableViewModel();
+      flow = viewModel.testDataFlow(0);
+    });
+
+    tearDown(() {
+      viewModel.dispose();
+    });
+
+    void runDroppable(FutureOr<void> Function(Updater update) action) {
+      viewModel.intent(
+        intentKey: #droppable,
+        action: action,
+        transformer: Transformers.droppable(),
+      );
+    }
+
+    FutureOr<void> Function(Updater update) incrementAfter(
+      Completer<void> gate,
+    ) {
+      return (update) async {
+        await gate.future;
+        update(flow).change((it) => ++it);
+      };
+    }
+
+    test('drops intents that arrive while the previous one is running',
+        () async {
+      final gate = Completer<void>();
+
+      runDroppable(incrementAfter(gate));
+      await Future<void>.delayed(Duration.zero);
+      runDroppable(incrementAfter(gate));
+      runDroppable(incrementAfter(gate));
+      await Future<void>.delayed(Duration.zero);
+      gate.complete();
+      await viewModel.awaitCurrentIntents();
+
+      expect(flow.value, 1);
+    });
+
+    test('accepts the next intent after the previous one completes', () async {
+      final first = Completer<void>();
+      final second = Completer<void>();
+
+      runDroppable(incrementAfter(first));
+      first.complete();
+      await viewModel.awaitCurrentIntents();
+      runDroppable(incrementAfter(second));
+      second.complete();
+      await viewModel.awaitCurrentIntents();
+
+      expect(flow.value, 2);
+    });
+
+    test('accepts the next intent after the previous one throws', () async {
+      final errors = <Object>[];
+
+      runZonedGuarded(
+        () => runDroppable((_) async => throw StateError('load failed')),
+        (error, _) => errors.add(error),
+      );
+      await viewModel.awaitCurrentIntents();
+      runDroppable((update) => update(flow).change((it) => ++it));
+      await viewModel.awaitCurrentIntents();
+
+      expect(errors.single, isA<StateError>());
+      expect(flow.value, 1);
+    });
+
+    test('cancels the running intent when the view model is disposed',
+        () async {
+      final disposedViewModel = TestableViewModel();
+      final observer = _CanceledIntentsObserver();
+      disposedViewModel.addObserver(observer);
+
+      disposedViewModel.intent(
+        intentKey: #droppable,
+        action: (_) => Completer<void>().future,
+        transformer: Transformers.droppable(),
+      );
+      await Future<void>.delayed(Duration.zero);
+      disposedViewModel.dispose();
+
+      expect(observer.canceled, [#droppable]);
+    });
+  });
+}
+
+class _CanceledIntentsObserver extends ViewModelObserver {
+  final canceled = <Symbol>[];
+
+  @override
+  void onIntentCanceled(Symbol intentKey) => canceled.add(intentKey);
 }
