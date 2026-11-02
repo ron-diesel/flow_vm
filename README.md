@@ -168,6 +168,10 @@ The repository includes unit and widget tests for `ViewModel`, observers, listen
 - DevTools integration examples
 - Additional intent transformers and utilities
 
+## Publishing
+
+Maintainers: see [Publishing](doc/publishing.md) for automated release setup and steps.
+
 ## License
 
 MIT License — see [LICENSE](./LICENSE).
